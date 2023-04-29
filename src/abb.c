@@ -149,20 +149,99 @@ size_t abb_tamanio(abb_t *arbol)
 
 void abb_destruir(abb_t *arbol)
 {
+	abb_destruir_todo(arbol, NULL);
 }
 
 void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 {
 }
 
-size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
-			     bool (*funcion)(void *, void *), void *aux)
+
+bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, void *), void *aux, size_t *contador)
 {
-	return 0;
+	if(!raiz)
+		return true;
+	
+	(*contador)++;
+	if(!funcion(raiz->elemento, aux))
+		return false;
+	
+	bool continuar_recorrido = abb_recorrer_predorder_recursivo(raiz->izquierda, funcion, aux, contador);
+	if(!continuar_recorrido)
+		return false;
+	
+	return abb_recorrer_predorder_recursivo(raiz->derecha, funcion, aux, contador);
+
+	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
+}
+
+
+bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, void *), void *aux, size_t *contador)
+{
+	if(!raiz)
+		return true;
+	
+	bool continuar_recorrido = abb_recorrer_inorder_recursivo(raiz->izquierda, funcion, aux, contador);
+	if(!continuar_recorrido)
+		return false;
+	
+	(*contador)++;
+	if(!funcion(raiz->elemento, aux))
+		return false;
+	
+	return abb_recorrer_inorder_recursivo(raiz->derecha, funcion, aux, contador);
+
+	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
+}
+
+bool abb_recorrer_postorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, void *), void *aux, size_t *contador)
+{
+	if(!raiz)
+		return true;
+	
+	bool continuar_recorrido = abb_recorrer_postorder_recursivo(raiz->izquierda, funcion, aux, contador);
+	if(!continuar_recorrido)
+		return false;
+	
+	continuar_recorrido = abb_recorrer_postorder_recursivo(raiz->derecha, funcion, aux, contador);
+	if(!continuar_recorrido)
+		return false;
+
+	(*contador)++;
+	if(!funcion(raiz->elemento, aux))	////ANALIZAR BIEN ESTE CASO, SI ES QUE NECESITA COLARSE DE NUEVO LA FUNCION EN OTRO LUGAR
+		return false;
+		
+	return true;		
+}
+
+
+size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
+				 bool (*funcion)(void *, void *), void *aux)
+{
+	if(!arbol || !funcion)		////ver si la funcion puede ser NULL
+		return 0;
+
+	size_t contador = 0;
+	switch(recorrido){
+		case(PREORDEN):
+			abb_recorrer_predorder_recursivo(arbol->nodo_raiz, funcion, aux, &contador);
+			break;
+		case(INORDEN):
+			abb_recorrer_inorder_recursivo(arbol->nodo_raiz, funcion, aux, &contador);
+			break;
+		case(POSTORDEN):
+			abb_recorrer_postorder_recursivo(arbol->nodo_raiz, funcion, aux, &contador);
+			break;
+		default:		////REVISAR EL USO CORRECTO DEL "default"
+			break;
+	}
+
+	return contador;
 }
 
 size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
-		    size_t tamanio_array)
+			size_t tamanio_array)
 {
+	
 	return 0;
 }
