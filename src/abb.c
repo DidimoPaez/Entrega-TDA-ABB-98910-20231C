@@ -2,20 +2,131 @@
 #include "abb_estructura_privada.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 abb_t *abb_crear(abb_comparador comparador)
 {
-	return NULL;
+	if (!comparador)
+		return NULL;
+
+	abb_t *abb = calloc (1, sizeof(abb_t));
+	if(!abb)
+		return NULL;
+
+	abb->comparador = comparador;
+	return abb;
+}
+
+/////////////////////////////////////////////////////////
+nodo_abb_t *nodo_crear(void *elemento)		//VER SI FUNCIONA CON "nodo_abb_t *", y sino probar con "struct nodo_abb *"
+{
+	nodo_abb_t *nodo = calloc(1, sizeof(nodo_abb_t));
+	if(!nodo)
+		return NULL;
+
+	nodo->elemento = elemento;
+	return nodo;
+}
+/////////////////////////////////////////////////////////
+nodo_abb_t *abb_insertar_rec(nodo_abb_t *raiz, abb_comparador comparador, size_t *tamanio, void *elemento, nodo_abb_t *nuevo_nodo)
+{
+	if(!comparador)
+		return NULL;	
+
+	if(!raiz){
+		(*tamanio)++;
+		return nuevo_nodo;
+	}
+
+	int comparacion = comparador(elemento, raiz->elemento);
+
+	if (comparacion <= 0){
+		raiz->izquierda = abb_insertar_rec(raiz->izquierda, comparador, tamanio, elemento, nuevo_nodo);
+	}else if(comparacion > 0)
+		raiz->derecha = abb_insertar_rec(raiz->derecha, comparador, tamanio, elemento, nuevo_nodo);
+	
+	return raiz;
 }
 
 abb_t *abb_insertar(abb_t *arbol, void *elemento)
 {
+	if(!arbol || !elemento)
+		return NULL;
+
+	nodo_abb_t *nuevo_nodo = nodo_crear(elemento);
+
+	arbol->nodo_raiz = abb_insertar_rec(arbol->nodo_raiz, arbol->comparador, &(arbol->tamanio), elemento, nuevo_nodo);
+	
 	return arbol;
 }
 
+/////////////////////////////////////////////////////////
+void *busqueda_predecesor_inorden(nodo_abb_t *raiz, void **predecesor_inorden)
+{
+	nodo_abb_t *izq = raiz->izquierda;
+	nodo_abb_t *der = raiz->derecha;	
+	if(!der && !izq){			//Esto es que llegue al sucesor y no haya nodos a izquierda
+		*predecesor_inorden = raiz->elemento;
+		free(raiz);	////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
+		return NULL;
+	}else if(!der && izq){		//Esto es que llegue al sucesor haya nodos a izquierda
+		*predecesor_inorden = raiz->elemento;
+		free(raiz);	////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
+		return(izq);
+	}
+	der = busqueda_predecesor_inorden(der, predecesor_inorden);	//Esto es para que queden enlazados los nodos en la raiz que se pasó por parámetro
+	return raiz;	//Esto es para devolver los nodos en la raiz que se pasó por parámetro
+}
+
+
+/////////////////////////////////////////////////////////
+void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, size_t *tamanio, void *elemento, void **buscado)
+{
+	if(!raiz || !comparador)		//VER SI ES TOTALMENTE NECESARIO ESTE if
+		return raiz;
+	
+	nodo_abb_t *izq = raiz->izquierda;
+	nodo_abb_t *der = raiz->derecha;
+	int comparacion = comparador(elemento, raiz->elemento);
+	if(comparacion == 0){
+		*buscado = raiz->elemento;
+		printf("ELEMENTO A BORRAR %i\n", *(int *)buscado);
+		if(izq && der){	//CASO CON 2 HIJOS
+			void * predecesor_inorden = NULL;
+			izq = busqueda_predecesor_inorden(izq, &predecesor_inorden);
+			raiz->elemento = predecesor_inorden;
+			(*tamanio)--;
+			return raiz;	////VER SI ES ESTO LO QUE SE DEBE DE DEVOLVER!!!!!!!!!!
+		}else{		//CASO 1 HIJO O NINGUN HIJO
+			free(raiz);
+			(*tamanio)--;
+			if(izq){
+				return izq;
+			}
+			return der;
+		}
+		// (*tamanio)--;
+	}else if (comparacion < 0){
+		izq = abb_quitar_recursivo(izq, comparador, tamanio, elemento, buscado);
+	}else 
+		der = abb_quitar_recursivo(der, comparador, tamanio, elemento, buscado);
+	
+	return raiz;
+
+
+}
+
+
 void *abb_quitar(abb_t *arbol, void *elemento)
 {
-	return elemento;
+	if(!arbol || !elemento)
+		return NULL;
+	
+	void *buscado = NULL;
+
+	arbol->nodo_raiz = abb_quitar_recursivo(arbol->nodo_raiz, arbol->comparador, &(arbol->tamanio), elemento, &buscado);
+	
+	return buscado;
 }
 
 void *abb_buscar(abb_t *arbol, void *elemento)
@@ -25,12 +136,15 @@ void *abb_buscar(abb_t *arbol, void *elemento)
 
 bool abb_vacio(abb_t *arbol)
 {
-	return true;
+	return (abb_tamanio(arbol) == 0);
 }
 
 size_t abb_tamanio(abb_t *arbol)
 {
-	return 0;
+	if(!arbol)
+		return 0;
+	
+	return arbol->tamanio;
 }
 
 void abb_destruir(abb_t *arbol)
