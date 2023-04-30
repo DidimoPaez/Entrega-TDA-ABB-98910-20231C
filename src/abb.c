@@ -57,7 +57,7 @@ nodo_abb_t *abb_insertar_rec(nodo_abb_t *raiz, abb_comparador comparador, size_t
 
 abb_t *abb_insertar(abb_t *arbol, void *elemento)
 {
-	if(!arbol || !elemento)
+	if(!arbol)
 		return NULL;
 
 	nodo_abb_t *nuevo_nodo = nodo_crear(elemento);
@@ -66,7 +66,7 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 	
 	return arbol;
 }
-/* 
+
 /////////////////////////////////////////////////////////
 void *busqueda_predecesor_inorden(nodo_abb_t *raiz, void **predecesor_inorden)
 {
@@ -81,7 +81,7 @@ void *busqueda_predecesor_inorden(nodo_abb_t *raiz, void **predecesor_inorden)
 		free(raiz);	////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
 		return(izq);
 	}
-	der = busqueda_predecesor_inorden(der, predecesor_inorden);	//Esto es para que queden enlazados los nodos en la raiz que se pasó por parámetro
+	raiz->derecha = busqueda_predecesor_inorden(raiz->derecha, predecesor_inorden);	//Esto es para que queden enlazados los nodos en la raiz que se pasó por parámetro
 	return raiz;	//Esto es para devolver los nodos en la raiz que se pasó por parámetro
 }
 
@@ -97,84 +97,29 @@ void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, size_t *
 	int comparacion = comparador(elemento, raiz->elemento);
 	if(comparacion == 0){
 		*buscado = raiz->elemento;
-		printf("ELEMENTO A BORRAR %i\n", *(int *)buscado);
 		if(izq && der){	//CASO CON 2 HIJOS
-			void * predecesor_inorden = NULL;
-			izq = busqueda_predecesor_inorden(izq, &predecesor_inorden);
+			void *predecesor_inorden = NULL;
+			raiz->izquierda = busqueda_predecesor_inorden(raiz->izquierda, &predecesor_inorden);
 			raiz->elemento = predecesor_inorden;
-			(*tamanio)--;
-			return raiz;	////VER SI ES ESTO LO QUE SE DEBE DE DEVOLVER!!!!!!!!!!
-		}else{		//CASO 1 HIJO O NINGUN HIJO
-			free(raiz);
-			(*tamanio)--;
-			if(izq){
-				return izq;
-			}
-			return der;
-		}
-	}else if (comparacion < 0){
-		izq = abb_quitar_recursivo(izq, comparador, tamanio, elemento, buscado);
-	}else 
-		der = abb_quitar_recursivo(der, comparador, tamanio, elemento, buscado);
-	
-	return raiz;
-}
- */
-
-
-/////////////////////////////////////////////////////////
-void *busqueda_predecesor_inorden(nodo_abb_t *raiz, nodo_abb_t **predecesor_inorden)
-{
-	nodo_abb_t *izq = raiz->izquierda;
-	nodo_abb_t *der = raiz->derecha;	
-	if(!der && !izq){			//Esto es que llegue al sucesor y no haya nodos a izquierda
-		*predecesor_inorden = raiz;
-		// free(raiz);	////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
-		return NULL;
-	}else if(!der && izq){		//Esto es que llegue al sucesor haya nodos a izquierda
-		*predecesor_inorden = raiz;
-		// free(raiz);	////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
-		return(izq);
-	}
-	der = busqueda_predecesor_inorden(der, predecesor_inorden);	//Esto es para que queden enlazados los nodos en la raiz que se pasó por parámetro
-	return raiz;	//Esto es para devolver los nodos en la raiz que se pasó por parámetro
-}
-
-
-/////////////////////////////////////////////////////////
-void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, size_t *tamanio, void *elemento, void **buscado)
-{
-	if(!raiz || !comparador)		//VER SI ES TOTALMENTE NECESARIO ESTE if
-		return raiz;
-	
-	nodo_abb_t *izq = raiz->izquierda;
-	nodo_abb_t *der = raiz->derecha;
-	int comparacion = comparador(elemento, raiz->elemento);
-	if(comparacion == 0){
-		*buscado = raiz->elemento;
-		if(izq && der){	//CASO CON 2 HIJOS
-			nodo_abb_t *predecesor_inorden = NULL;
-			izq = busqueda_predecesor_inorden(izq, &predecesor_inorden);
-			raiz->elemento = predecesor_inorden->elemento;
-			// free(predecesor_inorden);
 			(*tamanio)--;
 			return raiz;	////VER SI ES ESTO LO QUE SE DEBE DE DEVOLVER!!!!!!!!!!
 		}else{		//CASO 1 HIJO O NINGUN HIJO
 			// free(raiz);
 			(*tamanio)--;
-			if(izq){
+			if(raiz->izquierda){
+				free(raiz);
 				return izq;
 			}
+			free(raiz);
 			return der;
 		}
 	}else if (comparacion < 0){
-		izq = abb_quitar_recursivo(izq, comparador, tamanio, elemento, buscado);
+		raiz->izquierda = abb_quitar_recursivo(raiz->izquierda, comparador, tamanio, elemento, buscado);
 	}else 
-		der = abb_quitar_recursivo(der, comparador, tamanio, elemento, buscado);
+		raiz->derecha = abb_quitar_recursivo(raiz->derecha, comparador, tamanio, elemento, buscado);
 	
 	return raiz;
 }
-
 
 void *abb_quitar(abb_t *arbol, void *elemento)
 {
@@ -236,13 +181,8 @@ bool abb_destruir_postorder_recursivo(nodo_abb_t *raiz, void (*destructor)(void 
 	if(!raiz)
 		return true;
 	
-	/* bool continuar_recorrido =  */abb_destruir_postorder_recursivo(raiz->izquierda, destructor);
-	// if(!continuar_recorrido)
-	// 	return false;
-	
-	/* continuar_recorrido =  */abb_destruir_postorder_recursivo(raiz->derecha, destructor);
-	// if(!continuar_recorrido)
-	// 	return false;
+	abb_destruir_postorder_recursivo(raiz->izquierda, destructor);
+	abb_destruir_postorder_recursivo(raiz->derecha, destructor);
 
 	if(destructor)
 		destructor(raiz->elemento);

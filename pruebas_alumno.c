@@ -91,6 +91,13 @@ void pruebas_insercion ()
 
 }
 
+bool seguir_mostrando_recorrido(void *elemento, void* elemento_nulo)
+{
+	printf(" %i|", *(int *)elemento);
+	return true;
+}
+
+
 void pruebas_borrado ()
 {
 	{
@@ -111,12 +118,16 @@ void pruebas_borrado ()
 		void * borrado2 = abb_quitar(arbol, &elemento_borrar2);
 		pa2m_afirmar(borrado2 == (void *)(numeros + 4), "El elemento a borrar concuerda con el extraido");
 		pa2m_afirmar(abb_tamanio(arbol) == 6, "La cantidad de elementos restantes concuerda con la del tamaño del árbol");
+		pa2m_afirmar(abb_buscar(arbol, &elemento_borrar2) == NULL, "El elemento borrado ya no se encuentra más en el árbol");
 
 		int elemento_borrar3 = 16;
 		void * borrado3 = abb_quitar(arbol, &elemento_borrar3);
-		pa2m_afirmar(borrado3 == (void *)(numeros + 5), "El elemento a borrar concuerda con el extraido");
+		pa2m_afirmar(borrado3 == (void *)(numeros + 5), "El elemento a borrar (nodo hoja), concuerda con el extraido");
 		pa2m_afirmar(abb_tamanio(arbol) == 5, "La cantidad de elementos restantes concuerda con la del tamaño del árbol");
-		
+		pa2m_afirmar(abb_buscar(arbol, &elemento_borrar3) == NULL, "El elemento borrado ya no se encuentra más en el árbol");
+		abb_con_cada_elemento(arbol, POSTORDEN,seguir_mostrando_recorrido, NULL);
+		pa2m_afirmar(abb_buscar(arbol, &elemento_borrar3) != (void *)(numeros + 5), "El elemento borrado ya no se encuentra en el árbol");
+
 		int elemento_borrar4 = 17;
 		void * borrado4 = abb_quitar(arbol, &elemento_borrar4);
 		pa2m_afirmar(borrado4 == (void *)(numeros + 3), "El elemento a borrar concuerda con el extraido");
@@ -167,15 +178,21 @@ void pruebas_borrado ()
 		pa2m_afirmar(inexistente1 == NULL, "No se puede borrar un arbol vacío");
 		pa2m_afirmar(abb_tamanio(arbol) == 0, "El árbol se encuentra vacío");
 
+		int nuevo_elemento = 77;
+		abb_insertar(arbol,&nuevo_elemento);
+		pa2m_afirmar(abb_tamanio(arbol) == 1, "Se ingresa un nuevo elemento, el árbol ahora tiene un elemento");
+		abb_quitar(arbol, &nuevo_elemento);
+		pa2m_afirmar(abb_tamanio(arbol) == 0, "Se elimina elemento, el árbol ahora se encuentra vacío");
+
 		abb_destruir(arbol);
 	}
 }
 
-bool seguir_mostrando_recorrido(void *elemento, void* elemento_nulo)
-{
-	printf(" %i|", *(int *)elemento);
-	return true;
-}
+// bool seguir_mostrando_recorrido(void *elemento, void* elemento_nulo)
+// {
+// 	printf(" %i|", *(int *)elemento);
+// 	return true;
+// }
 
 void pruebas_iterador()
 {
