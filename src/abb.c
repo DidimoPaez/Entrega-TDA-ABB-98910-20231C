@@ -4,6 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+typedef struct vector_tope_tamanio{
+	void **array;
+	size_t tope;
+	size_t max_tamanio;
+}vector_tope_tamanio_t;
+
+
 abb_t *abb_crear(abb_comparador comparador)
 {
 	if (!comparador)
@@ -59,7 +66,7 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 	
 	return arbol;
 }
-
+/* 
 /////////////////////////////////////////////////////////
 void *busqueda_predecesor_inorden(nodo_abb_t *raiz, void **predecesor_inorden)
 {
@@ -105,15 +112,67 @@ void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, size_t *
 			}
 			return der;
 		}
-		// (*tamanio)--;
 	}else if (comparacion < 0){
 		izq = abb_quitar_recursivo(izq, comparador, tamanio, elemento, buscado);
 	}else 
 		der = abb_quitar_recursivo(der, comparador, tamanio, elemento, buscado);
 	
 	return raiz;
+}
+ */
 
 
+/////////////////////////////////////////////////////////
+void *busqueda_predecesor_inorden(nodo_abb_t *raiz, nodo_abb_t **predecesor_inorden)
+{
+	nodo_abb_t *izq = raiz->izquierda;
+	nodo_abb_t *der = raiz->derecha;	
+	if(!der && !izq){			//Esto es que llegue al sucesor y no haya nodos a izquierda
+		*predecesor_inorden = raiz;
+		// free(raiz);	////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
+		return NULL;
+	}else if(!der && izq){		//Esto es que llegue al sucesor haya nodos a izquierda
+		*predecesor_inorden = raiz;
+		// free(raiz);	////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
+		return(izq);
+	}
+	der = busqueda_predecesor_inorden(der, predecesor_inorden);	//Esto es para que queden enlazados los nodos en la raiz que se pasó por parámetro
+	return raiz;	//Esto es para devolver los nodos en la raiz que se pasó por parámetro
+}
+
+
+/////////////////////////////////////////////////////////
+void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador, size_t *tamanio, void *elemento, void **buscado)
+{
+	if(!raiz || !comparador)		//VER SI ES TOTALMENTE NECESARIO ESTE if
+		return raiz;
+	
+	nodo_abb_t *izq = raiz->izquierda;
+	nodo_abb_t *der = raiz->derecha;
+	int comparacion = comparador(elemento, raiz->elemento);
+	if(comparacion == 0){
+		*buscado = raiz->elemento;
+		if(izq && der){	//CASO CON 2 HIJOS
+			nodo_abb_t *predecesor_inorden = NULL;
+			izq = busqueda_predecesor_inorden(izq, &predecesor_inorden);
+			raiz->elemento = predecesor_inorden->elemento;
+			// free(predecesor_inorden);
+			(*tamanio)--;
+			return raiz;	////VER SI ES ESTO LO QUE SE DEBE DE DEVOLVER!!!!!!!!!!
+		}else{		//CASO 1 HIJO O NINGUN HIJO
+			// free(raiz);
+			(*tamanio)--;
+			if(izq){
+				return izq;
+			}
+			return der;
+		}
+	}else if (comparacion < 0){
+		izq = abb_quitar_recursivo(izq, comparador, tamanio, elemento, buscado);
+	}else 
+		der = abb_quitar_recursivo(der, comparador, tamanio, elemento, buscado);
+	
+	return raiz;
 }
 
 
@@ -131,8 +190,28 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 
 void *abb_buscar(abb_t *arbol, void *elemento)
 {
-	return elemento;
+	if(abb_tamanio(arbol) == 0)
+		return NULL;
+	
+	nodo_abb_t *actual = arbol->nodo_raiz;
+	nodo_abb_t *buscado = NULL;
+
+	while(actual){
+		int comparacion = arbol->comparador(elemento, actual->elemento);
+		if(comparacion > 0){
+			actual = actual->derecha;
+		}else if(comparacion < 0){
+			actual = actual->izquierda;
+		}else{
+			buscado = actual;
+			actual = NULL;
+		}
+	}
+	if(!buscado)
+		return NULL;
+	return buscado->elemento;
 }
+
 
 bool abb_vacio(abb_t *arbol)
 {
@@ -152,11 +231,37 @@ void abb_destruir(abb_t *arbol)
 	abb_destruir_todo(arbol, NULL);
 }
 
-void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
+bool abb_destruir_postorder_recursivo(nodo_abb_t *raiz, void (*destructor)(void *))
 {
+	if(!raiz)
+		return true;
+	
+	/* bool continuar_recorrido =  */abb_destruir_postorder_recursivo(raiz->izquierda, destructor);
+	// if(!continuar_recorrido)
+	// 	return false;
+	
+	/* continuar_recorrido =  */abb_destruir_postorder_recursivo(raiz->derecha, destructor);
+	// if(!continuar_recorrido)
+	// 	return false;
+
+	if(destructor)
+		destructor(raiz->elemento);
+	free(raiz);
+
+	return true;		
 }
 
+void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
+{
+	if(!arbol)
+		return;
+	
+	abb_destruir_postorder_recursivo(arbol->nodo_raiz, destructor);
+	free(arbol);
 
+}
+
+/////////////////////////////////////////////////
 bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, void *), void *aux, size_t *contador)
 {
 	if(!raiz)
@@ -175,7 +280,7 @@ bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, 
 	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
 }
 
-
+/////////////////////////////////////////////////
 bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, void *), void *aux, size_t *contador)
 {
 	if(!raiz)
@@ -193,7 +298,7 @@ bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, vo
 
 	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
 }
-
+/////////////////////////////////////////////////
 bool abb_recorrer_postorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, void *), void *aux, size_t *contador)
 {
 	if(!raiz)
@@ -214,6 +319,19 @@ bool abb_recorrer_postorder_recursivo(nodo_abb_t *raiz, bool (*funcion)(void *, 
 	return true;		
 }
 
+///////////////////////////////////////////////
+bool llenar_array(void *elemento, void *vector_estructura)
+{
+	vector_tope_tamanio_t *vector_struct = vector_estructura;
+
+	if(vector_struct->tope >= vector_struct->max_tamanio)
+		return false;
+	
+	vector_struct->array[vector_struct->tope] = elemento;
+	(vector_struct->tope)++;
+
+	return true;
+}
 
 size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 				 bool (*funcion)(void *, void *), void *aux)
@@ -242,6 +360,16 @@ size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 			size_t tamanio_array)
 {
+	if(!arbol || !array ||tamanio_array == 0)
+		return 0;
 	
-	return 0;
+	vector_tope_tamanio_t vector_estructura = {.tope = 0, .max_tamanio = tamanio_array};
+	vector_estructura.array = array;
+
+	abb_con_cada_elemento(arbol, recorrido, llenar_array, &vector_estructura);	
+
+	return vector_estructura.tope;
 }
+
+
+

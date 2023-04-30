@@ -49,6 +49,7 @@ void pruebas_creacion ()
 		pa2m_afirmar(abb_tamanio(arbol) == 0, "Se crea un árbol con cero elementos");
 		pa2m_afirmar(arbol->comparador != NULL, "Se crea un árbol con un comparador no nulo");
 	}
+	abb_destruir(arbol);
 }
 
 // bool mostrar_arbol(void* elemento_arbol, void * sin_elemento)
@@ -85,7 +86,7 @@ void pruebas_insercion ()
 
 		// printf("CANTIDAD DE ELEMENTOS ARBOL: %li\n", arbol->tamanio);
 		// printf("ELEMENTO ARBOL: %i\n", *(int *)arbol->nodo_raiz->elemento);
-
+		abb_destruir(arbol);
 	}
 
 }
@@ -100,27 +101,26 @@ void pruebas_borrado ()
 			abb_insertar(arbol, numeros + i);
 		}
 		int elemento_borrar1 = 18;
+		pa2m_afirmar(abb_buscar(arbol, &elemento_borrar1) == (void *)(numeros + 0), "El elemento a borrar se encuentra en el árbol");
 		void * borrado1 = abb_quitar(arbol, &elemento_borrar1);
 		pa2m_afirmar(borrado1 == (void *)(numeros + 0), "El elemento a borrar concuerda con el extraido");
 		pa2m_afirmar(abb_tamanio(arbol) == 7, "La cantidad de elementos restantes concuerda con la del tamaño del árbol");
-		// pa2m_afirmar(abb_buscar(arbol, elemento_borrar1) == (void *)(numeros + 2), "El elemento borrado ya no se encuentra más en el árbol");
+		pa2m_afirmar(abb_buscar(arbol, &elemento_borrar1) == NULL, "El elemento borrado ya no se encuentra más en el árbol");
+		
 		int elemento_borrar2 = 15;
 		void * borrado2 = abb_quitar(arbol, &elemento_borrar2);
 		pa2m_afirmar(borrado2 == (void *)(numeros + 4), "El elemento a borrar concuerda con el extraido");
 		pa2m_afirmar(abb_tamanio(arbol) == 6, "La cantidad de elementos restantes concuerda con la del tamaño del árbol");
-		// pa2m_afirmar(abb_buscar(arbol, elemento_borrar2) == (void *)(numeros + 2), "El elemento borrado ya no se encuentra más en el árbol");
 
 		int elemento_borrar3 = 16;
 		void * borrado3 = abb_quitar(arbol, &elemento_borrar3);
 		pa2m_afirmar(borrado3 == (void *)(numeros + 5), "El elemento a borrar concuerda con el extraido");
 		pa2m_afirmar(abb_tamanio(arbol) == 5, "La cantidad de elementos restantes concuerda con la del tamaño del árbol");
-		// pa2m_afirmar(abb_buscar(arbol, elemento_borrar3) == (void *)(numeros + 2), "El elemento borrado ya no se encuentra más en el árbol");
 		
 		int elemento_borrar4 = 17;
 		void * borrado4 = abb_quitar(arbol, &elemento_borrar4);
 		pa2m_afirmar(borrado4 == (void *)(numeros + 3), "El elemento a borrar concuerda con el extraido");
 		pa2m_afirmar(abb_tamanio(arbol) == 4, "La cantidad de elementos restantes concuerda con la del tamaño del árbol");
-		// pa2m_afirmar(abb_buscar(arbol, elemento_borrar4) == (void *)(numeros + 2), "El elemento borrado ya no se encuentra más en el árbol");
 
 		int elemento_inexistente = 32;
 		void * inexistente = abb_quitar(arbol, &elemento_inexistente);
@@ -166,6 +166,8 @@ void pruebas_borrado ()
 		void * inexistente1 = abb_quitar(arbol, &elemento_inexistente1);
 		pa2m_afirmar(inexistente1 == NULL, "No se puede borrar un arbol vacío");
 		pa2m_afirmar(abb_tamanio(arbol) == 0, "El árbol se encuentra vacío");
+
+		abb_destruir(arbol);
 	}
 }
 
@@ -174,7 +176,6 @@ bool seguir_mostrando_recorrido(void *elemento, void* elemento_nulo)
 	printf(" %i|", *(int *)elemento);
 	return true;
 }
-
 
 void pruebas_iterador()
 {
@@ -190,10 +191,49 @@ void pruebas_iterador()
 		pa2m_afirmar(elementos_recorridos == abb_tamanio(arbol), "Cantidad de elementos recorridos iterador concuerda con tamaño del árbol y tipo de recorrido.");
 
 
-
+		abb_destruir(arbol);
 
 	}
 }
+void pruebas_llenado_array()
+{
+	{
+		abb_t *arbol = abb_crear (comparador_2);
+
+		int numeros[5] = {4, 2, 3, 1, 5}; 
+		int tope_numeros = 5;
+		for(int i = 0; i < tope_numeros;i++){
+			abb_insertar(arbol, numeros + i);
+		}
+
+		size_t max_tamanio1 = 3;
+		int *vector1[max_tamanio1];
+		size_t cant_elementos_ingresados1 = abb_recorrer(arbol, INORDEN, (void **)vector1, max_tamanio1);
+
+
+		pa2m_afirmar(max_tamanio1 == cant_elementos_ingresados1,"La cantidad de elementos ingresados es el máximo tamaño del vector");
+
+		size_t max_tamanio2 = 10;
+		int *vector2[max_tamanio2];
+		size_t cant_elementos_ingresados2 = abb_recorrer(arbol, INORDEN, (void **)vector2, max_tamanio2);
+		
+		for(int i = 0; i < 5;i++){
+			printf("%i|", *vector2[i]);
+		}
+		pa2m_afirmar(cant_elementos_ingresados2 == abb_tamanio(arbol),"La cantidad de elementos ingresados es la canatidad máxima del árbol y según el orden definido");
+
+		size_t max_tamanio3 = 0;
+		int *vector3[max_tamanio3];
+		size_t cant_elementos_ingresados3 = abb_recorrer(arbol, INORDEN, (void **)vector3, max_tamanio3);
+		
+		pa2m_afirmar(cant_elementos_ingresados3 == 0,"No se puede ingresar elementos en un vector de tamaño cero");
+		
+		abb_destruir(arbol);
+	}
+}
+
+
+
 int main()
 {
 	pa2m_nuevo_grupo(
@@ -204,13 +244,21 @@ int main()
 		"\n======================== PRUEBAS INSERTAR EN ARBOL ========================");
 	pruebas_insercion();
 
-	// pa2m_nuevo_grupo(
-	// 	"\n======================== PRUEBAS BORRAR DE ARBOL ========================");
-	// pruebas_borrado();
+	pa2m_nuevo_grupo(
+		"\n======================== PRUEBAS BORRAR DE ARBOL ========================");
+	pruebas_borrado();
 
 	pa2m_nuevo_grupo(
 		"\n======================== PRUEBAS ITERADOR DE ARBOL ========================");
 	pruebas_iterador();
+
+	pa2m_nuevo_grupo(
+		"\n======================== PRUEBAS LLENADO ARRAY ========================");
+	pruebas_llenado_array();
+
+	// pa2m_nuevo_grupo(
+	// 	"\n======================== PRUEBAS BUSCAR EN ARBOL ========================");
+	// pruebas_buscar();
 
 	return pa2m_mostrar_reporte();
 }

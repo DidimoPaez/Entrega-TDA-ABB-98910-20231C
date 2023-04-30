@@ -54,3 +54,10 @@ vector_original = vector;
 
 ## Respuestas a las preguntas teóricas
 Incluír acá las respuestas a las preguntas del enunciado (si aplica).
+
+
+
+- CONSULTA:
+
+Por qué si se quiere probar la función "abb_recorrer" y se le pasa un vector de punteros declarado e inicializado de la siguiente manera: "int **vector = NULL;", cuando se desea compilar el programa cae en seg fault? en cambio cuando se declara el vector de forma:
+"int *vector[];", se compila y ejecuta sin problema? es debido a la inicialización del vector en NULL con la primera forma? y de qué otra forma se podría declarar el vector usando la nomenclatura de punteros?
