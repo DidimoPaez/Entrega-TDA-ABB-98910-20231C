@@ -27,7 +27,7 @@ valgrind-interactivo: interactivo
 	valgrind $(VALGRIND_FLAGS) ./interactivo
 
 interactivo: *.c *.h
-	$(CC) $(CFLAGS) abb.c mostrar_abb.c interactivo.c -o interactivo 2>&1
+	$(CC) $(CFLAGS) src/*.c -o interactivo 2>&1
 
 clean:
 	rm -f pruebas_alumno pruebas_chanutron ejemplo
