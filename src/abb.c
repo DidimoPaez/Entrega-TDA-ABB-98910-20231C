@@ -81,56 +81,6 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 	return arbol;
 }
 
-// nodo_abb_t *abb_insertar_it(nodo_abb_t *raiz, abb_comparador comparador,
-// 			    size_t *tamanio, void *elemento,
-// 			    nodo_abb_t *nuevo_nodo)
-// {
-// 	if (!raiz) {
-// 		raiz = nuevo_nodo;
-// 		(*tamanio)++;
-// 		return raiz;
-// 	}
-
-// 	nodo_abb_t *actual = raiz;
-
-// 	while (actual) {
-// 		int comparacion = comparador(elemento, actual->elemento);
-
-// 		if (comparacion > 0) {
-// 			if (!actual->derecha) {
-// 				actual->derecha = nuevo_nodo;
-// 				(*tamanio)++;
-// 				actual = NULL;
-// 			} else
-// 				actual = actual->derecha;
-// 		} else {
-// 			if (!actual->izquierda) {
-// 				actual->izquierda = nuevo_nodo;
-// 				(*tamanio)++;
-// 				actual = NULL;
-// 			} else
-// 				actual = actual->izquierda;
-// 		}
-// 	}
-
-// 	return raiz;
-// }
-
-// abb_t *abb_insertar(abb_t *arbol, void *elemento)
-// {
-// 	if (!arbol)
-// 		return NULL;
-
-// 	nodo_abb_t *nuevo_nodo = nodo_crear(elemento);
-// 	if (!nuevo_nodo)
-// 		return NULL;
-
-// 	arbol->nodo_raiz = abb_insertar_it(arbol->nodo_raiz, arbol->comparador,
-// 					   &arbol->tamanio, elemento,
-// 					   nuevo_nodo);
-// 	return arbol;
-// }
-
 /* 
 *	Se devuelve como puntero al respectivo predecesor indorden de la raíz pasada por parámetro, dicho elemento será el 
 *	extremo derecho de dicha rama.
@@ -141,21 +91,18 @@ void *busqueda_predecesor_inorden(nodo_abb_t *raiz, void **predecesor_inorden)
 {
 	nodo_abb_t *izq = raiz->izquierda;
 	nodo_abb_t *der = raiz->derecha;
-	if (!der &&
-	    !izq) { //Esto es que llegue al sucesor y no haya nodos a izquierda
+	if (!der && !izq) {
 		*predecesor_inorden = raiz->elemento;
-		free(raiz); ////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
+		free(raiz);
 		return NULL;
-	} else if (!der &&
-		   izq) { //Esto es que llegue al sucesor haya nodos a izquierda
+	} else if (!der && izq) {
 		*predecesor_inorden = raiz->elemento;
-		free(raiz); ////VER SI ES NECESARIO HACER FREE DE LOS ELEMENTOS DENTRO DEL NODO!!!
+		free(raiz);
 		return (izq);
 	}
-	raiz->derecha = busqueda_predecesor_inorden(
-		raiz->derecha,
-		predecesor_inorden); //Esto es para que queden enlazados los nodos en la raiz que se pasó por parámetro
-	return raiz; //Esto es para devolver los nodos en la raiz que se pasó por parámetro
+	raiz->derecha =
+		busqueda_predecesor_inorden(raiz->derecha, predecesor_inorden);
+	return raiz;
 }
 
 /* 
@@ -174,14 +121,14 @@ void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador,
 	int comparacion = comparador(elemento, raiz->elemento);
 	if (comparacion == 0) {
 		*buscado = raiz->elemento;
-		if (izq && der) { //CASO CON 2 HIJOS
+		if (izq && der) {
 			void *predecesor_inorden = NULL;
 			raiz->izquierda = busqueda_predecesor_inorden(
 				raiz->izquierda, &predecesor_inorden);
 			raiz->elemento = predecesor_inorden;
 			(*tamanio)--;
-			return raiz; ////VER SI ES ESTO LO QUE SE DEBE DE DEVOLVER!!!!!!!!!!
-		} else { //CASO 1 HIJO O NINGUN HIJO
+			return raiz;
+		} else {
 			free(raiz);
 			(*tamanio)--;
 			if (izq) {
@@ -235,6 +182,7 @@ void *abb_buscar(abb_t *arbol, void *elemento)
 	}
 	if (!buscado)
 		return NULL;
+
 	return buscado->elemento;
 }
 
@@ -256,6 +204,12 @@ void abb_destruir(abb_t *arbol)
 	abb_destruir_todo(arbol, NULL);
 }
 
+/* 
+*	Se libera cada uno de los nodos del árbol empezando por la extrema izquierda, seguido de su nodo hermano de derecha, y 
+*	luego se elimina al padre de ambos (recorrido POSTORDEN).
+*	De tenerse una función "destructor" no nula se le aplicará a cada elemento del árbol antes de eliminar el mnodo que 
+*	lo contiene.
+* */
 bool abb_destruir_postorder_recursivo(nodo_abb_t *raiz,
 				      void (*destructor)(void *))
 {
@@ -286,6 +240,8 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 *	nodo derecho.
 *	Se devuelve true o false según lo especificado en la función pasada por parámetro, o true en caso de haber recorrido todo
 * 	el álbol sin error.
+*	Por parámetro se estará cargando la cantidad de veces que se aplicó la función pasada por parámetro sin importar si el 
+*	resultado es true o false.
 * */
 bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz,
 				      bool (*funcion)(void *, void *),
@@ -305,8 +261,6 @@ bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz,
 
 	return abb_recorrer_predorder_recursivo(raiz->derecha, funcion, aux,
 						contador);
-
-	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
 }
 
 /* 
@@ -314,6 +268,8 @@ bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz,
 *	derecho.
 *	Se devuelve true o false según lo especificado en la función pasada por parámetro, o true en caso de haber recorrido todo
 * 	el álbol sin error.
+*	Por parámetro se estará cargando la cantidad de veces que se aplicó la función pasada por parámetro sin importar si el 
+*	resultado es true o false.
 * */
 bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz,
 				    bool (*funcion)(void *, void *), void *aux,
@@ -333,8 +289,6 @@ bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz,
 
 	return abb_recorrer_inorder_recursivo(raiz->derecha, funcion, aux,
 					      contador);
-
-	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
 }
 
 /* 
@@ -342,6 +296,8 @@ bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz,
 *	nodo derecho(implementado la función correspondiente a su elemento), y luego raiz.
 *	Se devuelve true o false según lo especificado en la función pasada por parámetro, o true en caso de haber recorrido todo
 * 	el álbol sin error.
+*	Por parámetro se estará cargando la cantidad de veces que se aplicó la función pasada por parámetro sin importar si el 
+*	resultado es true o false.
 * */
 bool abb_recorrer_postorder_recursivo(nodo_abb_t *raiz,
 				      bool (*funcion)(void *, void *),
@@ -361,8 +317,7 @@ bool abb_recorrer_postorder_recursivo(nodo_abb_t *raiz,
 		return false;
 
 	(*contador)++;
-	if (!funcion(raiz->elemento,
-		     aux)) ////ANALIZAR BIEN ESTE CASO, SI ES QUE NECESITA COLARSE DE NUEVO LA FUNCION EN OTRO LUGAR
+	if (!funcion(raiz->elemento, aux))
 		return false;
 
 	return continuar_recorrido;
@@ -390,7 +345,7 @@ bool llenar_array(void *elemento, void *vector_estructura)
 size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 			     bool (*funcion)(void *, void *), void *aux)
 {
-	if (!arbol || !funcion) ////ver si la funcion puede ser NULL
+	if (!arbol || !funcion)
 		return 0;
 
 	size_t contador = 0;
