@@ -23,10 +23,9 @@ abb_t *abb_crear(abb_comparador comparador)
 	return abb;
 }
 
-/////////////////////////////////////////////////////////
 /* 
-*	
-*
+*	Se devolverá un nodo inicializado en todos sus campos y cargado con el respectivo puntero al elemento pasado por parámetro.
+*	Si hay algún error de ejecución se devolverá NULL.
 * */
 nodo_abb_t *nodo_crear(void *elemento)
 {
@@ -37,70 +36,33 @@ nodo_abb_t *nodo_crear(void *elemento)
 	nodo->elemento = elemento;
 	return nodo;
 }
-// /////////////////////////////////////////////////////////
-// nodo_abb_t *abb_insertar_rec(nodo_abb_t *raiz, abb_comparador comparador, size_t *tamanio, void *elemento, nodo_abb_t *nuevo_nodo)
-// {
-// 	if(!comparador)
-// 		return NULL;
 
-// 	if(!raiz){
-// 		(*tamanio)++;
-// 		return nuevo_nodo;
-// 	}
-
-// 	int comparacion = comparador(elemento, raiz->elemento);
-
-// 	if (comparacion <= 0){
-// 		raiz->izquierda = abb_insertar_rec(raiz->izquierda, comparador, tamanio, elemento, nuevo_nodo);
-// 	}else if(comparacion > 0)
-// 		raiz->derecha = abb_insertar_rec(raiz->derecha, comparador, tamanio, elemento, nuevo_nodo);
-
-// 	return raiz;
-// }
-
-// abb_t *abb_insertar(abb_t *arbol, void *elemento)
-// {
-// 	if(!arbol)
-// 		return NULL;
-
-// 	nodo_abb_t *nuevo_nodo = nodo_crear(elemento);
-
-// 	arbol->nodo_raiz = abb_insertar_rec(arbol->nodo_raiz, arbol->comparador, &(arbol->tamanio), elemento, nuevo_nodo);
-
-// 	return arbol;
-// }
-
-nodo_abb_t *abb_insertar_it(nodo_abb_t *raiz, abb_comparador comparador,
-			    size_t *tamanio, void *elemento,
-			    nodo_abb_t *nuevo_nodo)
+/* 
+*	Se devolverá la raiz completa ya con el elemento cargado en su posición adecuada, e incrementando el respectivo
+*	tamaño del árbol. 
+*	De haber error se devolverá NULL.
+* */
+nodo_abb_t *abb_insertar_rec(nodo_abb_t *raiz, abb_comparador comparador,
+			     size_t *tamanio, void *elemento,
+			     nodo_abb_t *nuevo_nodo)
 {
+	if (!comparador)
+		return NULL;
+
 	if (!raiz) {
-		raiz = nuevo_nodo;
 		(*tamanio)++;
-		return raiz;
+		return nuevo_nodo;
 	}
 
-	nodo_abb_t *actual = raiz;
+	int comparacion = comparador(elemento, raiz->elemento);
 
-	while (actual) {
-		int comparacion = comparador(elemento, actual->elemento);
-
-		if (comparacion > 0) {
-			if (!actual->derecha) {
-				actual->derecha = nuevo_nodo;
-				(*tamanio)++;
-				actual = NULL;
-			} else
-				actual = actual->derecha;
-		} else {
-			if (!actual->izquierda) {
-				actual->izquierda = nuevo_nodo;
-				(*tamanio)++;
-				actual = NULL;
-			} else
-				actual = actual->izquierda;
-		}
-	}
+	if (comparacion <= 0) {
+		raiz->izquierda = abb_insertar_rec(raiz->izquierda, comparador,
+						   tamanio, elemento,
+						   nuevo_nodo);
+	} else if (comparacion > 0)
+		raiz->derecha = abb_insertar_rec(raiz->derecha, comparador,
+						 tamanio, elemento, nuevo_nodo);
 
 	return raiz;
 }
@@ -111,16 +73,70 @@ abb_t *abb_insertar(abb_t *arbol, void *elemento)
 		return NULL;
 
 	nodo_abb_t *nuevo_nodo = nodo_crear(elemento);
-	if (!nuevo_nodo)
-		return NULL;
 
-	arbol->nodo_raiz = abb_insertar_it(arbol->nodo_raiz, arbol->comparador,
-					   &arbol->tamanio, elemento,
-					   nuevo_nodo);
+	arbol->nodo_raiz = abb_insertar_rec(arbol->nodo_raiz, arbol->comparador,
+					    &(arbol->tamanio), elemento,
+					    nuevo_nodo);
+
 	return arbol;
 }
 
-/////////////////////////////////////////////////////////
+// nodo_abb_t *abb_insertar_it(nodo_abb_t *raiz, abb_comparador comparador,
+// 			    size_t *tamanio, void *elemento,
+// 			    nodo_abb_t *nuevo_nodo)
+// {
+// 	if (!raiz) {
+// 		raiz = nuevo_nodo;
+// 		(*tamanio)++;
+// 		return raiz;
+// 	}
+
+// 	nodo_abb_t *actual = raiz;
+
+// 	while (actual) {
+// 		int comparacion = comparador(elemento, actual->elemento);
+
+// 		if (comparacion > 0) {
+// 			if (!actual->derecha) {
+// 				actual->derecha = nuevo_nodo;
+// 				(*tamanio)++;
+// 				actual = NULL;
+// 			} else
+// 				actual = actual->derecha;
+// 		} else {
+// 			if (!actual->izquierda) {
+// 				actual->izquierda = nuevo_nodo;
+// 				(*tamanio)++;
+// 				actual = NULL;
+// 			} else
+// 				actual = actual->izquierda;
+// 		}
+// 	}
+
+// 	return raiz;
+// }
+
+// abb_t *abb_insertar(abb_t *arbol, void *elemento)
+// {
+// 	if (!arbol)
+// 		return NULL;
+
+// 	nodo_abb_t *nuevo_nodo = nodo_crear(elemento);
+// 	if (!nuevo_nodo)
+// 		return NULL;
+
+// 	arbol->nodo_raiz = abb_insertar_it(arbol->nodo_raiz, arbol->comparador,
+// 					   &arbol->tamanio, elemento,
+// 					   nuevo_nodo);
+// 	return arbol;
+// }
+
+/* 
+*	Se devuelve como puntero al respectivo predecesor indorden de la raíz pasada por parámetro, dicho elemento será el 
+*	extremo derecho de dicha rama.
+*	Se devolverá directamente la raiz actualizada luego de la extracción del predecesor inorden de la misma.
+*	Se libera la memoria correspondiente al predecesor inorden.
+* */
 void *busqueda_predecesor_inorden(nodo_abb_t *raiz, void **predecesor_inorden)
 {
 	nodo_abb_t *izq = raiz->izquierda;
@@ -142,7 +158,11 @@ void *busqueda_predecesor_inorden(nodo_abb_t *raiz, void **predecesor_inorden)
 	return raiz; //Esto es para devolver los nodos en la raiz que se pasó por parámetro
 }
 
-/////////////////////////////////////////////////////////
+/* 
+*	Se extrae el elemento pasado por parámetro devolviendo la raíz principal del árbol con todo su contenido ya actualizado
+*	después de dicha extracción.
+*	Devuelve por parámetro el puntero al valor buscado dentro del árbol si este existe.
+* */
 void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador,
 			   size_t *tamanio, void *elemento, void **buscado)
 {
@@ -182,7 +202,7 @@ void *abb_quitar_recursivo(nodo_abb_t *raiz, abb_comparador comparador,
 
 void *abb_quitar(abb_t *arbol, void *elemento)
 {
-	if (!arbol || !elemento)
+	if (!arbol)
 		return NULL;
 
 	void *buscado = NULL;
@@ -261,7 +281,12 @@ void abb_destruir_todo(abb_t *arbol, void (*destructor)(void *))
 	free(arbol);
 }
 
-/////////////////////////////////////////////////
+/* 
+*	Se recorre el árbol de forma: raiz (implementado la función correspondiente a su elemento), nodo izquierdo y luego 
+*	nodo derecho.
+*	Se devuelve true o false según lo especificado en la función pasada por parámetro, o true en caso de haber recorrido todo
+* 	el álbol sin error.
+* */
 bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz,
 				      bool (*funcion)(void *, void *),
 				      void *aux, size_t *contador)
@@ -284,7 +309,12 @@ bool abb_recorrer_predorder_recursivo(nodo_abb_t *raiz,
 	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
 }
 
-/////////////////////////////////////////////////
+/* 
+*	Se recorre el árbol de forma: nodo izquierdo, raiz (implementado la función correspondiente a su elemento) y luego nodo 
+*	derecho.
+*	Se devuelve true o false según lo especificado en la función pasada por parámetro, o true en caso de haber recorrido todo
+* 	el álbol sin error.
+* */
 bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz,
 				    bool (*funcion)(void *, void *), void *aux,
 				    size_t *contador)
@@ -306,7 +336,13 @@ bool abb_recorrer_inorder_recursivo(nodo_abb_t *raiz,
 
 	// return true;		////VER SI ESTE "return" DEBERÍA DE IR
 }
-/////////////////////////////////////////////////
+
+/* 
+*	Se recorre el árbol de forma: nodo izquierdo (implementado la función correspondiente a su elemento), 
+*	nodo derecho(implementado la función correspondiente a su elemento), y luego raiz.
+*	Se devuelve true o false según lo especificado en la función pasada por parámetro, o true en caso de haber recorrido todo
+* 	el álbol sin error.
+* */
 bool abb_recorrer_postorder_recursivo(nodo_abb_t *raiz,
 				      bool (*funcion)(void *, void *),
 				      void *aux, size_t *contador)
@@ -332,7 +368,12 @@ bool abb_recorrer_postorder_recursivo(nodo_abb_t *raiz,
 	return continuar_recorrido;
 }
 
-///////////////////////////////////////////////
+/* 
+*	Se recibe una estructura con un vector vacío, su respectivo tope y la cantidad máxima de elementos a almacenar en el mismo.
+*	Se llena el vector con el elemento pasado por parámetro y se actualiza el respectivo tope.
+*	Se devuelve true en caso de que se haya podido cargar el elemento y su tope, o false en caso de que ya se haya completado la 
+*	cantidad total de elementos.
+ */
 bool llenar_array(void *elemento, void *vector_estructura)
 {
 	vector_tope_tamanio_t *vector_struct = vector_estructura;
