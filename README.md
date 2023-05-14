@@ -122,7 +122,6 @@ Operaciones básicas:
 
 -   Buscar elemento:
     Al igual que en las anteriores operaciones se realiza un método comparativo, de hecho la operación eliminar elemento sigue un criterio de búsqueda para saber si el elemento a eliminar existe o no dentro del árbol. De esta forma se comienza buscando (comparando), por el elemento raiz y según sea la convención de mayores y menores se continuará haciendolo según corresponda ya sea con el elemento izquierdo o derecho hasta encontrar al elemento buscado o hasta llegar a una hoja en cuyo caso no existirá el elemento dentro del árbol.
-    
     ![diagrama_borrar](https://github.com/DidimoPaez/Entrega-TDA-ABB-98910-20231C/assets/127914445/dec50f03-e361-4867-acd6-d35045adb4f6)
 -   Tamaño del árbol.
 
