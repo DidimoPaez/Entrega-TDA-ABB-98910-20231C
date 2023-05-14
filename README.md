@@ -89,6 +89,10 @@ Definición de árbol binario de búsqueda (ABB):
     En este caso a diferencia que en los dos anteriores, acá se tiene que los elementos dentro del TDA conservan un tipo de oren específico, com lo cual se permite mejorar el desempeño en cuanto a complejidades dentro de sus operaciones a realizar.
 
     Por lo general se lleva a cabo adoptando determinadas convenciones para el desarrollo del mismo, como es el caso de que los elementos menores (o iguales), vayan a izquierda y los mayores lo hagan a derecha (o viceversa).
+    
+![diagrama_arbol](https://github.com/DidimoPaez/Entrega-TDA-ABB-98910-20231C/assets/127914445/87e1b644-afd0-40a4-b0b5-8d66eb7fddfd)
+
+![diagrama arbol y abb](https://github.com/DidimoPaez/Entrega-TDA-ABB-98910-20231C/assets/127914445/52dc8cf4-9920-4ecf-b720-c6bf14193c5f)
 
 Operaciones básicas:
 -   Crear árbol.
@@ -103,6 +107,8 @@ Operaciones básicas:
 
     Acá es importante tener en cuenta (en cuanto a implementación), la convención a adoptar en caso de que un elemento a ingresar sea igual a otro ya existente en el árbol, en cuyo caso se puede elegir que el elemento se ingrese o a derecha o a izquierda del mismo, teniendo que conservar dicha convención a lo largo del programa.
 
+![diagrama insercion arbol](https://github.com/DidimoPaez/Entrega-TDA-ABB-98910-20231C/assets/127914445/961ecc95-d698-49d9-abfa-4f532c714f25)
+
 -   Extraer elemento:
     La extracción puede realizarse de cualquier posición del árbol, desde la raiz o cualquiera de los hijos. La manera de realizarse será siguiendo un criterio de búsqueda mediante el cual se va comparando el elemento (comenzando seiempre por la raiz) a eliminar con el elemento que se va "leyendo" actualmente, de esta forma se sabrá en qué sentido irá la busqueda y la subsequente comparación hasta encontrar al respectivo elemento o hasta llegar a una hoja del árbol, caso en el cual no se habrá encontrado el elemento.
 
@@ -116,7 +122,8 @@ Operaciones básicas:
 
 -   Buscar elemento:
     Al igual que en las anteriores operaciones se realiza un método comparativo, de hecho la operación eliminar elemento sigue un criterio de búsqueda para saber si el elemento a eliminar existe o no dentro del árbol. De esta forma se comienza buscando (comparando), por el elemento raiz y según sea la convención de mayores y menores se continuará haciendolo según corresponda ya sea con el elemento izquierdo o derecho hasta encontrar al elemento buscado o hasta llegar a una hoja en cuyo caso no existirá el elemento dentro del árbol.
-
+    
+    ![diagrama_borrar](https://github.com/DidimoPaez/Entrega-TDA-ABB-98910-20231C/assets/127914445/dec50f03-e361-4867-acd6-d35045adb4f6)
 -   Tamaño del árbol.
 
 -   Destruir árbol:
