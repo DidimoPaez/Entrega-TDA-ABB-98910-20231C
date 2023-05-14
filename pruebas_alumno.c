@@ -4,32 +4,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-// typedef struct elemento {
-// 	int clave;
-// 	char contenido[10];
-// } elemento_t;
-
-// int comparador_1 (void * elemento_1, void * elemento_2)
-// {
-// 	elemento_t *el_1 = elemento_1;
-// 	elemento_t *el_2 = elemento_2;
-
-// 	return (el_1->clave - el_2->clave);
-// }
-
-// elemento_t *crear_elemento(int clave)
-// {
-// 	elemento_t *elemento = (elemento_t *)malloc(sizeof(elemento_t));
-// 	if (elemento)
-// 		elemento->clave = clave;
-// 	return elemento;
-// }
-
-// void destruir_elemento(elemento_t *elemento)
-// {
-// 	free(elemento);
-// }
-
 int comparador_2(void *elemento_1, void *elemento_2)
 {
 	int *el_1 = elemento_1;
@@ -155,21 +129,6 @@ void pruebas_borrado()
 		pa2m_afirmar(
 			abb_tamanio(arbol) == 4,
 			"La cantidad de elementos restantes concuerda con la del tamaño del árbol");
-
-		// int elementos_restantes[4];
-		// elementos_restantes[0] = numeros[1];
-		// elementos_restantes[1] = numeros[7];
-		// elementos_restantes[2] = numeros[2];
-		// elementos_restantes[3] = numeros[6];
-
-		// int elementos_borrar[4] = {20, 10, 11, 14};
-		// void * elemento_borrado = NULL;
-		// for(int i = 0; i < 4; i++){
-		// 	elemento_borrado = abb_quitar(arbol, elementos_borrar + i);
-		// 	printf("A BORRAR: %i | EXTRAIDO: %i", *(elementos_restantes + i), *(int *)elemento_borrado);
-		// 	pa2m_afirmar(elemento_borrado == (void *)(elementos_restantes + i), "El elemento a borrar concuerda con el extraido");
-		// 	pa2m_afirmar(abb_tamanio(arbol) == (3 - i), "La cantidad de elementos restantes concuerda con la del tamaño del árbol");
-		// }
 
 		int elemento_borrar5 = 20;
 		void *borrado5 = abb_quitar(arbol, &elemento_borrar5);
